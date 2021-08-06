@@ -22,7 +22,7 @@
             "path": "lang/en.json"
         }
     ],
-    "scripts": [
+    "esmodules": [
         "./scripts/main.js"
     ],
     "minimumCoreVersion": "0.8.5",
