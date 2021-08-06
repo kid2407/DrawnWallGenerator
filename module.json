@@ -1,13 +1,18 @@
 {
-    "name": "showwalls",
-    "title": "Show Walls Everywhere",
-    "description": "Show walls in any layer",
-    "version": "0.1",
+    "name": "drawn-wall-generator",
+    "title": "Drawn Wall Generator",
+    "description": "Draws walls on the map layer based on the ones on the wall layer.",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "theripper93",
             "email": "tsplab@gmail.com",
             "url": "https://www.patreon.com/theripper93"
+        },
+        {
+            "name": "Tobias Franz",
+            "url": "https://github.com/kid2407",
+            "discord": "kid2407 / Tobias#6450"
         }
     ],
     "languages": [
@@ -21,8 +26,8 @@
         "./scripts/main.js"
     ],
     "minimumCoreVersion": "0.8.5",
-    "compatibleCoreVersion": "0.8.6",
-    "url": "https://github.com/theripper93/Show-Walls-Everywhere",
-    "manifest": "https://github.com/theripper93/Show-Walls-Everywhere/releases/latest/download/module.json",
-    "download": "https://github.com/theripper93/Show-Walls-Everywhere/releases/latest/download/module.zip"
+    "compatibleCoreVersion": "0.8.8",
+    "url": "https://github.com/kid2407/DrawnWallGenerator",
+    "manifest": "https://github.com/kid2407/DrawnWallGenerator/releases/latest/download/module.json",
+    "download": "https://github.com/kid2407/DrawnWallGenerator/releases/latest/download/module.zip"
 }
