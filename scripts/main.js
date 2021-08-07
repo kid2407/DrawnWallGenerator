@@ -1,6 +1,6 @@
 import {WallDisplayApplication} from "./WallDisplayApplication.js";
 
-Hooks.on("getSceneControlButtons", (controls, b, c) => {
+Hooks.on("getSceneControlButtons", (controls) => {
     if (game.user.isGM) {
         let basictools = controls.find((x) => x["name"] === "tiles").tools;
         basictools.push({
@@ -17,4 +17,8 @@ Hooks.on("getSceneControlButtons", (controls, b, c) => {
     }
 });
 
-Hooks.on('init', WallDisplayApplication.registerSettings)
+Hooks.on('ready', () => {
+    if (!game.settings.hasOwnProperty(WallDisplayApplication.MODULE_ID)) {
+        WallDisplayApplication.registerSettings()
+    }
+})

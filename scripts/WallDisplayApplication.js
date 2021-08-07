@@ -1,6 +1,7 @@
 export class WallDisplayApplication extends FormApplication {
     static MODULE_ID = 'drawn-wall-generator'
     static _showWallsEW = false
+    static _oldLineWidth = 5
 
     async _updateObject(event, formData) {
         return Promise.resolve(undefined)
@@ -9,7 +10,8 @@ export class WallDisplayApplication extends FormApplication {
     getData(options = {}) {
         // noinspection JSValidateTypes
         return {
-            'content': "Some random contEnt!"
+            'content': "Some random contEnt!",
+            'lineThickness': game.settings.get(WallDisplayApplication.MODULE_ID, 'lineThickness')
         }
     }
 
@@ -45,28 +47,85 @@ export class WallDisplayApplication extends FormApplication {
             range: {
                 min: 1,
                 max: 100,
-                step: 10,
-                default: 5
+                step: 10
             },
-            onChange: async value => {
-                await WallDisplayApplication.toggleShowWallsEverywhere(false)
-                await WallDisplayApplication.toggleShowWallsEverywhere(true)
+            default: 5,
+            onChange: () => {
+                if (WallDisplayApplication._showWallsEW) {
+                    WallDisplayApplication.toggleShowWallsEverywhere(false).then()
+                }
+                WallDisplayApplication.toggleShowWallsEverywhere(true).then()
             }
         })
     }
 
+    /**
+     * @param {int[]} coords
+     * @param {int} lineWidth
+     * @param {boolean} isDoor
+     * @param {boolean} reverse
+     * @returns {int[]}
+     */
+    static adjustLineCoordinates(coords, lineWidth, isDoor, reverse = false) {
+        let finalCoordinates = []
+        let lineWidthHalved = lineWidth / 2
+        let wallDirection = coords[0] === coords[2] ? 'vertical' : (coords[1] === coords[3] ? 'horizontal' : 'neither')
+        if (wallDirection === 'vertical') {
+            if (coords[1] < coords[3] && !isDoor) {
+                coords[1] = coords[1] - (lineWidthHalved) * (reverse ? -1 : 1)
+                coords[3] = coords[3] + (lineWidthHalved) * (reverse ? -1 : 1)
+            } else {
+                coords[1] = coords[1] + (lineWidthHalved) * (reverse ? -1 : 1)
+                coords[3] = coords[3] - (lineWidthHalved) * (reverse ? -1 : 1)
+            }
+            finalCoordinates.push(coords[0] - lineWidthHalved, coords[1], coords[0] + lineWidthHalved, coords[1], coords[2] + lineWidthHalved, coords[3], coords[2] - lineWidthHalved, coords[3])
+        } else if (wallDirection === 'horizontal') {
+            if (coords[0] < coords[2] && !isDoor) {
+                coords[0] = coords[0] - (lineWidthHalved) * (reverse ? -1 : 1)
+                coords[2] = coords[2] + (lineWidthHalved) * (reverse ? -1 : 1)
+            } else {
+                coords[0] = coords[0] + (lineWidthHalved) * (reverse ? -1 : 1)
+                coords[2] = coords[2] - (lineWidthHalved) * (reverse ? -1 : 1)
+            }
+            finalCoordinates.push(coords[0], coords[1] - lineWidthHalved, coords[0], coords[1] + lineWidthHalved, coords[2], coords[3] + lineWidthHalved, coords[2], coords[3] - lineWidthHalved)
+        }
+
+        return finalCoordinates
+    }
+
     static async toggleShowWallsEverywhere(toggle) {
+        let lineWidth = game.settings.get(WallDisplayApplication.MODULE_ID, 'lineThickness')
+        let g
         if (toggle) {
-            let g = new PIXI.Graphics()
+            g = new PIXI.Graphics()
             g.name = "_showWallsEW"
-            canvas.walls.placeables.forEach((c) => {
-                g.beginFill(c.children[1]._fillStyle.color).lineStyle(game.settings.get(WallDisplayApplication.MODULE_ID, 'lineThickness'), c.children[1]._fillStyle.color).drawPolygon(c.coords).endFill()
-            })
-            canvas.effects.addChild(g)
+            WallDisplayApplication._oldLineWidth = lineWidth
         } else {
-            canvas.effects.children.forEach((c) => {
+            lineWidth = WallDisplayApplication._oldLineWidth
+            canvas.background.children.forEach((c) => {
                 if (c.name === "_showWallsEW") c.destroy()
             })
+        }
+
+        // noinspection JSValidateTypes
+        /** @var {Wall[]} placeables */
+        let placeables = canvas.walls.placeables
+        placeables.forEach((c) => {
+            // noinspection JSUnresolvedFunction
+            let wall = deepClone(c)
+            let wallData = wall.data
+            logger.info(`It has the following values: door: ${wallData.door}, move: ${wallData.move}, sense: ${wallData.sense}, sound: ${wallData.sound}`)
+            let coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, wallData.door === 1, !toggle)
+
+            if (toggle) {
+                let texture = new PIXI.Texture.from(`/modules/${WallDisplayApplication.MODULE_ID}/lava.png`);
+                g.beginTextureFill({
+                    texture: texture
+                }).drawPolygon(coords).endFill()
+            }
+        })
+        if (toggle) {
+            canvas.background.addChild(g)
         }
     }
 
@@ -75,6 +134,9 @@ export class WallDisplayApplication extends FormApplication {
         preventClose = false,
         preventRender = false
     } = {}) {
+        let button = $('#wda-dialogue button[type="submit"]')
+        button.addClass('disabled')
+        button.attr('disabled', true)
         let formData = this._getSubmitData(updateData)
         logger.info('Form Content:', formData)
         event.preventDefault()
@@ -85,5 +147,8 @@ export class WallDisplayApplication extends FormApplication {
                 logger.info(`Updated setting ${formDataKey} with value ${formData[formDataKey]}.`)
             }
         }
+
+        button.removeClass('disabled')
+        button.attr('disabled', false)
     }
 }
