@@ -1,4 +1,5 @@
 import {WallDisplayApplication} from "./WallDisplayApplication.js";
+import {Config} from "./Config.js";
 
 Hooks.on("getSceneControlButtons", (controls) => {
     if (game.user.isGM) {
@@ -18,7 +19,5 @@ Hooks.on("getSceneControlButtons", (controls) => {
 });
 
 Hooks.on('ready', () => {
-    if (!game.settings.hasOwnProperty(WallDisplayApplication.MODULE_ID)) {
-        WallDisplayApplication.registerSettings()
-    }
+    Config.registerConfig()
 })

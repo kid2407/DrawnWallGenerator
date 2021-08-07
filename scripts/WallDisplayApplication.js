@@ -1,63 +1,9 @@
-export class WallDisplayApplication extends FormApplication {
+import {Config} from "./Config.js";
+
+export class WallDisplayApplication {
     static MODULE_ID = 'drawn-wall-generator'
     static _showWallsEW = false
     static _oldLineWidth = 5
-
-    async _updateObject(event, formData) {
-        return Promise.resolve(undefined)
-    }
-
-    getData(options = {}) {
-        // noinspection JSValidateTypes
-        return {
-            'content': "Some random contEnt!",
-            'lineThickness': game.settings.get(WallDisplayApplication.MODULE_ID, 'lineThickness')
-        }
-    }
-
-    static get defaultOptions() {
-        let options = super.defaultOptions
-        options.width = 600
-        options.height = 500
-        options.resizable = true
-        options.id = 'wda-dialogue'
-        options.title = game.i18n.localize(`${(WallDisplayApplication.MODULE_ID)}.dialogue.title`)
-        options.template = `modules/${WallDisplayApplication.MODULE_ID}/templates/dialogue.hbs`
-        options.closeOnSubmit = false
-
-        return options
-    }
-
-    static registerSettings() {
-        game.settings.registerMenu(WallDisplayApplication.MODULE_ID, 'sub-settings', {
-            name: "Configuration",
-            label: "Open",
-            hint: "Adjust the settings of how the wall will be displayed.",
-            icon: "fas fa-wrench",
-            type: WallDisplayApplication,
-            restricted: true
-        })
-
-        game.settings.register(WallDisplayApplication.MODULE_ID, 'lineThickness', {
-            name: "Register a Module Setting with a Range slider",
-            hint: "A description of the registered setting and its behavior.",
-            scope: "world",
-            config: false,
-            type: Number,
-            range: {
-                min: 1,
-                max: 100,
-                step: 10
-            },
-            default: 5,
-            onChange: () => {
-                if (WallDisplayApplication._showWallsEW) {
-                    WallDisplayApplication.toggleShowWallsEverywhere(false).then()
-                }
-                WallDisplayApplication.toggleShowWallsEverywhere(true).then()
-            }
-        })
-    }
 
     /**
      * @param {int[]} coords
@@ -93,13 +39,52 @@ export class WallDisplayApplication extends FormApplication {
         return finalCoordinates
     }
 
+    static async loadTextures() {
+        let textureType = '', texturePath = ''
+        let loadedTextures = {}
+        try {
+            for (let textureTypeKey in Config.TEXTURE_TYPES) {
+                if (Config.TEXTURE_TYPES.hasOwnProperty(textureTypeKey)) {
+                    textureType = Config.TEXTURE_TYPES[textureTypeKey]
+                    texturePath = Config.ACTIVE_CONFIG[textureType]
+                    await FilePicker.browse('data', texturePath)
+                    loadedTextures[textureType] = new PIXI.Texture.from(texturePath)
+                }
+            }
+            return loadedTextures
+        } catch (e) {
+            logger.error(e)
+            ui.notifications.error(`An error occured while loading the texture for ${textureType} from ${texturePath}: ${e}.`, {permanent: true})
+            return false
+        }
+    }
+
+    /**
+     * @param {{c: int[], dir: int, door: int, ds: int, move: int, sense: int, sound: int}} wallData
+     * @returns {string}
+     */
+    static getTextureTypeForWall(wallData) {
+        let textureType = Config.TEXTURE_WALL
+
+        if (wallData.door === 1) {
+            textureType = Config.TEXTURE_DOOR
+        }
+
+        return textureType
+    }
+
     static async toggleShowWallsEverywhere(toggle) {
         let lineWidth = game.settings.get(WallDisplayApplication.MODULE_ID, 'lineThickness')
-        let g
+        let g, coords, wallData, textureType
+        let loadedTextures = false
         if (toggle) {
             g = new PIXI.Graphics()
             g.name = "_showWallsEW"
             WallDisplayApplication._oldLineWidth = lineWidth
+            loadedTextures = await WallDisplayApplication.loadTextures()
+            if (!loadedTextures) {
+                return
+            }
         } else {
             lineWidth = WallDisplayApplication._oldLineWidth
             canvas.background.children.forEach((c) => {
@@ -111,44 +96,19 @@ export class WallDisplayApplication extends FormApplication {
         /** @var {Wall[]} placeables */
         let placeables = canvas.walls.placeables
         placeables.forEach((c) => {
-            // noinspection JSUnresolvedFunction
-            let wall = deepClone(c)
-            let wallData = wall.data
-            logger.info(`It has the following values: door: ${wallData.door}, move: ${wallData.move}, sense: ${wallData.sense}, sound: ${wallData.sound}`)
-            let coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, wallData.door === 1, !toggle)
+            /** {{c: int[], dir: int, door: int, ds: int, move: int, sense: int, sound: int}} wallData */
+            wallData = c.data
+            textureType = WallDisplayApplication.getTextureTypeForWall(wallData)
+            coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, textureType === Config.TEXTURE_DOOR, !toggle)
 
             if (toggle) {
-                let texture = new PIXI.Texture.from(`/modules/${WallDisplayApplication.MODULE_ID}/lava.png`);
                 g.beginTextureFill({
-                    texture: texture
+                    texture: loadedTextures[textureType]
                 }).drawPolygon(coords).endFill()
             }
         })
         if (toggle) {
             canvas.background.addChild(g)
         }
-    }
-
-    async _onSubmit(event, {
-        updateData = null,
-        preventClose = false,
-        preventRender = false
-    } = {}) {
-        let button = $('#wda-dialogue button[type="submit"]')
-        button.addClass('disabled')
-        button.attr('disabled', true)
-        let formData = this._getSubmitData(updateData)
-        logger.info('Form Content:', formData)
-        event.preventDefault()
-
-        for (let formDataKey in formData) {
-            if (formData.hasOwnProperty(formDataKey)) {
-                game.settings.set(WallDisplayApplication.MODULE_ID, formDataKey, formData[formDataKey])
-                logger.info(`Updated setting ${formDataKey} with value ${formData[formDataKey]}.`)
-            }
-        }
-
-        button.removeClass('disabled')
-        button.attr('disabled', false)
     }
 }
