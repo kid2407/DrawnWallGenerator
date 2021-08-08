@@ -65,16 +65,20 @@ export class WallDisplayApplication {
 
     /**
      * @param {{c: int[], dir: int, door: int, ds: int, move: int, sense: int, sound: int}} wallData
-     * @returns {string}
+     * @returns {string|false}
      */
     static getTextureTypeForWall(wallData) {
-        let textureType = Config.TEXTURE_WALL
-
         if (wallData.door === 1) {
-            textureType = Config.TEXTURE_DOOR
+            return Config.TEXTURE_DOOR
+        } else if (wallData.move === 1 && wallData.sense === 1 && wallData.sound === 1){
+            return Config.TEXTURE_WALL
+        } else if (wallData.move === 1 && wallData.sense === 2 && wallData.sound === 1) {
+            return Config.TEXTURE_TERRAIN_WALL
+        } else if (wallData.move === 0 && wallData.sense === 2 && wallData.sound === 1) {
+            return Config.TEXTURE_ETHERAL_WALL
         }
 
-        return textureType
+        return false
     }
 
     static async toggleShowWallsEverywhere(toggle) {
@@ -106,15 +110,17 @@ export class WallDisplayApplication {
             /** {{c: int[], dir: int, door: int, ds: int, move: int, sense: int, sound: int}} wallData */
             wallData = c.data
             textureType = WallDisplayApplication.getTextureTypeForWall(wallData)
-            coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, doorWidth, textureType === Config.TEXTURE_DOOR, !toggle)
+            if (textureType) {
+                coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, doorWidth, textureType === Config.TEXTURE_DOOR, !toggle)
 
-            if (toggle) {
-                rotationMatrix = new PIXI.Matrix();
-                rotationMatrix.rotate(Math.atan2(coords[3] - coords[1], coords[2] - coords[0]) + Math.PI / 2);
-                g.beginTextureFill({
-                    texture: loadedTextures[textureType],
-                    matrix: rotationMatrix
-                }).drawPolygon(coords).endFill()
+                if (toggle) {
+                    rotationMatrix = new PIXI.Matrix();
+                    rotationMatrix.rotate(Math.atan2(coords[3] - coords[1], coords[2] - coords[0]) + Math.PI / 2);
+                    g.beginTextureFill({
+                        texture: loadedTextures[textureType],
+                        matrix: rotationMatrix
+                    }).drawPolygon(coords).endFill()
+                }
             }
         })
         if (toggle) {

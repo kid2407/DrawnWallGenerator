@@ -8,7 +8,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
             active: WallDisplayApplication._showWallsEW,
             icon: "fas fa-landmark",
             name: "showwallsToggle",
-            title: game.i18n.localize("showWalls.tools.toggle.hint"),
+            title: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.buttonHint`),
             onClick: async (toggle) => {
                 WallDisplayApplication._showWallsEW = toggle;
                 await WallDisplayApplication.toggleShowWallsEverywhere(toggle)

@@ -1,3 +1,35 @@
 {
-    "drawn-wall-generator.dialogue.title": "This is the title!"
+    "drawn-wall-generator": {
+        "settings": {
+            "lineThickness": {
+                "name": "Wall width",
+                "hint": "Determines how wide the generated walls should be."
+            },
+            "doorThickness": {
+                "name": "Door width",
+                "hint": "Determines how wide the generated walls should be."
+            },
+            "wallTexture": {
+                "name": "Wall texture",
+                "hint": "The texture to use for walls."
+            },
+            "doorTexture": {
+                "name": "Door texture",
+                "hint": "The texture to use for doors."
+            },
+            "terrainWall": {
+                "name": "Terrain wall texture",
+                "hint": "The texture to use for terrain walls."
+            },
+            "etheralWall": {
+                "name": "Etheral wall texture",
+                "hint": "The texture to use for etheral walls."
+            },
+            "showAngledWalls": {
+                "name": "[EXPERIMENTAL] Show angled walls",
+                "hint": "Displays also angled walls, which are not quite as refined as the others - use at your own risk."
+            }
+        },
+        "buttonHint": "Toggle wall overlay"
+    }
 }

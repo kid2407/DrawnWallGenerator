@@ -4,4 +4,4 @@
 
 A module to generate visually appealing walls from the walls layer in a configurable way.
 
-![Showcase](https://github.com/theripper93/Show-Walls-Everywhere/raw/main/wiki/showcase.gif)
+![Showcase](https://github.com/kid2407/Show-Walls-Everywhere/raw/main/wiki/showcase.gif)

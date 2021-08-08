@@ -5,9 +5,11 @@ export class Config {
     static DOOR_THICKNESS = 'doorThickness'
     static TEXTURE_WALL = 'wallTexture'
     static TEXTURE_DOOR = 'doorTexture'
+    static TEXTURE_TERRAIN_WALL = 'terrainWall';
+    static TEXTURE_ETHERAL_WALL = 'etheralWall';
     static SHOW_ANGLED_WALLS = 'showAngledWalls';
 
-    static TEXTURE_TYPES = [Config.TEXTURE_WALL, Config.TEXTURE_DOOR]
+    static TEXTURE_TYPES = [Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL]
 
     static ACTIVE_CONFIG = {}
 
@@ -17,7 +19,7 @@ export class Config {
      */
     static async _handleUpdatedConfig(toggleDisplay = false) {
         logger.info('Config was updated!')
-        let settings = [Config.LINE_THICKNESS, Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.SHOW_ANGLED_WALLS, Config.DOOR_THICKNESS]
+        let settings = [Config.LINE_THICKNESS, Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL, Config.SHOW_ANGLED_WALLS, Config.DOOR_THICKNESS]
         for (let settingsKey in settings) {
             if (settings.hasOwnProperty(settingsKey)) {
                 let settingName = settings[settingsKey]
@@ -28,16 +30,16 @@ export class Config {
         if (toggleDisplay) {
             if (WallDisplayApplication._showWallsEW) {
                 await WallDisplayApplication.toggleShowWallsEverywhere(false)
+                await WallDisplayApplication.toggleShowWallsEverywhere(true)
             }
-            await WallDisplayApplication.toggleShowWallsEverywhere(true)
         }
     }
 
     static registerConfig() {
         if (!game.settings.hasOwnProperty(WallDisplayApplication.MODULE_ID)) {
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.LINE_THICKNESS, {
-                name: "Wall width",
-                hint: "Set how wide the generated walls should be.",
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.LINE_THICKNESS}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.LINE_THICKNESS}.hint`),
                 scope: "world",
                 config: true,
                 type: Number,
@@ -46,14 +48,14 @@ export class Config {
                     max: 100,
                     step: 5
                 },
-                default: 10,
+                default: 15,
                 onChange: async () => {
                     await this._handleUpdatedConfig(true)
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.DOOR_THICKNESS, {
-                name: "Door width",
-                hint: "Set how wide the generated doors should be.",
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.DOOR_THICKNESS}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.DOOR_THICKNESS}.hint`),
                 scope: "world",
                 config: true,
                 type: Number,
@@ -68,8 +70,32 @@ export class Config {
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_WALL, {
-                name: "Normal wall texture",
-                hint: "",
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_WALL}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_WALL}.hint`),
+                scope: "world",
+                config: true,
+                type: String,
+                filePicker: true,
+                default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
+                onChange: async () => {
+                    await this._handleUpdatedConfig(true)
+                }
+            })
+            game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_TERRAIN_WALL, {
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_TERRAIN_WALL}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_TERRAIN_WALL}.hint`),
+                scope: "world",
+                config: true,
+                type: String,
+                filePicker: true,
+                default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
+                onChange: async () => {
+                    await this._handleUpdatedConfig(true)
+                }
+            })
+            game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_ETHERAL_WALL, {
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_ETHERAL_WALL}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_ETHERAL_WALL}.hint`),
                 scope: "world",
                 config: true,
                 type: String,
@@ -80,8 +106,8 @@ export class Config {
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_DOOR, {
-                name: "Door texture",
-                hint: "",
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_DOOR}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_DOOR}.hint`),
                 scope: "world",
                 config: true,
                 type: String,
@@ -92,12 +118,11 @@ export class Config {
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.SHOW_ANGLED_WALLS, {
-                name: "[Experimental] Display angled walls",
-                hint: "This is an experimental setting - not like it should be",
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.SHOW_ANGLED_WALLS}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.SHOW_ANGLED_WALLS}.hint`),
                 scope: "world",
                 config: true,
                 type: Boolean,
-                filePicker: true,
                 default: false,
                 onChange: async () => {
                     await this._handleUpdatedConfig(true)
