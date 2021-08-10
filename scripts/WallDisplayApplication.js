@@ -2,9 +2,6 @@ import {Config} from "./Config.js";
 
 export class WallDisplayApplication {
     static MODULE_ID = 'drawn-wall-generator'
-    static _showWallsEW = false
-    static _oldLineWidth = 10
-    static _oldDoorWidth = 5
 
     /**
      * @param {int[]} coords
@@ -51,8 +48,12 @@ export class WallDisplayApplication {
                 if (Config.TEXTURE_TYPES.hasOwnProperty(textureTypeKey)) {
                     textureType = Config.TEXTURE_TYPES[textureTypeKey]
                     texturePath = Config.ACTIVE_CONFIG[textureType]
-                    await FilePicker.browse('data', texturePath)
-                    loadedTextures[textureType] = new PIXI.Texture.from(texturePath)
+                    if (texturePath !== '') {
+                        await FilePicker.browse('data', texturePath)
+                        loadedTextures[textureType] = new PIXI.Texture.from(texturePath)
+                    } else {
+                        loadedTextures[textureType] = null
+                    }
                 }
             }
             return loadedTextures
@@ -70,7 +71,7 @@ export class WallDisplayApplication {
     static getTextureTypeForWall(wallData) {
         if (wallData.door === 1) {
             return Config.TEXTURE_DOOR
-        } else if (wallData.move === 1 && wallData.sense === 1 && wallData.sound === 1){
+        } else if (wallData.move === 1 && wallData.sense === 1 && wallData.sound === 1) {
             return Config.TEXTURE_WALL
         } else if (wallData.move === 1 && wallData.sense === 2 && wallData.sound === 1) {
             return Config.TEXTURE_TERRAIN_WALL
@@ -81,27 +82,36 @@ export class WallDisplayApplication {
         return false
     }
 
-    static async toggleShowWallsEverywhere(toggle) {
+    /**
+     * Removes the old tile, if present.
+     *
+     * @private
+     */
+    static async _removeOldWallTile() {
+        let fittingTiles = canvas.scene.tiles.filter(t => t.getFlag(this.MODULE_ID, 'generated') === true);
+        if (fittingTiles.length > 0) {
+            await fittingTiles[0].delete()
+        }
+    }
+
+    static async generateWallTile() {
+        await this._removeOldWallTile()
+
         let lineWidth = game.settings.get(WallDisplayApplication.MODULE_ID, Config.LINE_THICKNESS)
         let doorWidth = game.settings.get(WallDisplayApplication.MODULE_ID, Config.DOOR_THICKNESS)
-        let g, wallData, textureType, rotationMatrix, coords
+        let g, wallData, textureType, rotationMatrix, coords, rawCoords
         let loadedTextures = false
-        if (toggle) {
-            g = new PIXI.Graphics()
-            g.name = "_showWallsEW"
-            WallDisplayApplication._oldLineWidth = lineWidth
-            WallDisplayApplication._oldDoorWidth = doorWidth
-            loadedTextures = await WallDisplayApplication.loadTextures()
-            if (!loadedTextures) {
-                return
-            }
-        } else {
-            lineWidth = WallDisplayApplication._oldLineWidth
-            doorWidth = WallDisplayApplication._oldDoorWidth
-            canvas.background.children.forEach((c) => {
-                if (c.name === "_showWallsEW") c.destroy()
-            })
+        g = new PIXI.Graphics()
+        g.name = "_innerGeneratedWalls"
+        loadedTextures = await WallDisplayApplication.loadTextures()
+        if (!loadedTextures) {
+            return
         }
+
+        let minX = Infinity
+        let minY = Infinity
+        let leftmostPoint
+        let topmostPoint
 
         // noinspection JSValidateTypes
         /** @var {Wall[]} placeables */
@@ -109,22 +119,40 @@ export class WallDisplayApplication {
         placeables.forEach((c) => {
             /** {{c: int[], dir: int, door: int, ds: int, move: int, sense: int, sound: int}} wallData */
             wallData = c.data
+            rawCoords = wallData.c
             textureType = WallDisplayApplication.getTextureTypeForWall(wallData)
-            if (textureType) {
-                coords = WallDisplayApplication.adjustLineCoordinates(wallData.c, lineWidth, doorWidth, textureType === Config.TEXTURE_DOOR, !toggle)
+            if (textureType && loadedTextures[textureType] !== null) {
+                leftmostPoint = rawCoords[0] < rawCoords[2] ? rawCoords[0] : rawCoords[2]
+                topmostPoint = rawCoords[1] < rawCoords[3] ? rawCoords[1] : rawCoords[3]
+                if (leftmostPoint < minX) minX = leftmostPoint;
+                if (topmostPoint < minY) minY = topmostPoint;
 
-                if (toggle) {
-                    rotationMatrix = new PIXI.Matrix();
-                    rotationMatrix.rotate(Math.atan2(coords[3] - coords[1], coords[2] - coords[0]) + Math.PI / 2);
-                    g.beginTextureFill({
-                        texture: loadedTextures[textureType],
-                        matrix: rotationMatrix
-                    }).drawPolygon(coords).endFill()
-                }
+                coords = WallDisplayApplication.adjustLineCoordinates(rawCoords, lineWidth, doorWidth, textureType === Config.TEXTURE_DOOR)
+
+                rotationMatrix = new PIXI.Matrix();
+                rotationMatrix.rotate(Math.atan2(coords[3] - coords[1], coords[2] - coords[0]) + Math.PI / 2);
+                g.beginTextureFill({
+                    texture: loadedTextures[textureType],
+                    matrix: rotationMatrix
+                }).drawPolygon(coords).endFill()
             }
         })
-        if (toggle) {
-            canvas.background.addChild(g)
-        }
+
+        canvas.background.addChild(g)
+        let target = canvas.background.children.find(c => c.name === '_innerGeneratedWalls')
+        let container = new PIXI.Container()
+        container.addChild(target)
+
+        let tiles = await canvas.scene.createEmbeddedDocuments('Tile', [{
+            img: await canvas.app.renderer.extract
+                .base64(container, "image/webp", 0.1)
+                .replace("webp", "png"),
+            height: container.height,
+            width: container.width,
+            x: minX - lineWidth / 2,
+            y: minY - lineWidth / 2
+        }])
+
+        await tiles[0].setFlag(this.MODULE_ID, 'generated', true)
     }
 }

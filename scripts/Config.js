@@ -14,23 +14,15 @@ export class Config {
     static ACTIVE_CONFIG = {}
 
     /**
-     * @param {boolean} toggleDisplay
      * @private
      */
-    static async _handleUpdatedConfig(toggleDisplay = false) {
+    static async _handleUpdatedConfig() {
         logger.info('Config was updated!')
         let settings = [Config.LINE_THICKNESS, Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL, Config.SHOW_ANGLED_WALLS, Config.DOOR_THICKNESS]
         for (let settingsKey in settings) {
             if (settings.hasOwnProperty(settingsKey)) {
                 let settingName = settings[settingsKey]
                 Config.ACTIVE_CONFIG[settingName] = game.settings.get(WallDisplayApplication.MODULE_ID, settingName)
-            }
-        }
-
-        if (toggleDisplay) {
-            if (WallDisplayApplication._showWallsEW) {
-                await WallDisplayApplication.toggleShowWallsEverywhere(false)
-                await WallDisplayApplication.toggleShowWallsEverywhere(true)
             }
         }
     }
@@ -50,7 +42,7 @@ export class Config {
                 },
                 default: 15,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.DOOR_THICKNESS, {
@@ -66,7 +58,7 @@ export class Config {
                 },
                 default: 5,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_WALL, {
@@ -78,7 +70,7 @@ export class Config {
                 filePicker: true,
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_TERRAIN_WALL, {
@@ -90,7 +82,7 @@ export class Config {
                 filePicker: true,
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_ETHERAL_WALL, {
@@ -102,7 +94,7 @@ export class Config {
                 filePicker: true,
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_DOOR, {
@@ -114,7 +106,7 @@ export class Config {
                 filePicker: true,
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/door.png`,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
             game.settings.register(WallDisplayApplication.MODULE_ID, Config.SHOW_ANGLED_WALLS, {
@@ -125,7 +117,7 @@ export class Config {
                 type: Boolean,
                 default: false,
                 onChange: async () => {
-                    await this._handleUpdatedConfig(true)
+                    await this._handleUpdatedConfig()
                 }
             })
         }
