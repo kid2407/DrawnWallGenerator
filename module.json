@@ -2,7 +2,7 @@
     "name": "drawn-wall-generator",
     "title": "Drawn Wall Generator",
     "description": "Draws walls on the map layer based on the ones on the wall layer.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "authors": [
         {
             "name": "theripper93",
