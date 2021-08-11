@@ -25,6 +25,10 @@
                 "name": "Etheral wall texture",
                 "hint": "The texture to use for etheral walls."
             },
+            "invisibleWall": {
+                "name": "Invisible wall texture",
+                "hint": "The texture to use for invisible walls."
+            },
             "showAngledWalls": {
                 "name": "[EXPERIMENTAL] Show angled walls",
                 "hint": "Displays also angled walls, which are not quite as refined as the others - use at your own risk."

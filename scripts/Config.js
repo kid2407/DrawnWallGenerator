@@ -7,9 +7,10 @@ export class Config {
     static TEXTURE_DOOR = 'doorTexture'
     static TEXTURE_TERRAIN_WALL = 'terrainWall';
     static TEXTURE_ETHERAL_WALL = 'etheralWall';
+    static TEXTURE_INVISIBLE_WALL = 'invisibleWall';
     static SHOW_ANGLED_WALLS = 'showAngledWalls';
 
-    static TEXTURE_TYPES = [Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL]
+    static TEXTURE_TYPES = [Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL, Config.TEXTURE_INVISIBLE_WALL]
 
     static ACTIVE_CONFIG = {}
 
@@ -18,7 +19,7 @@ export class Config {
      */
     static async _handleUpdatedConfig() {
         logger.info('Config was updated!')
-        let settings = [Config.LINE_THICKNESS, Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL, Config.SHOW_ANGLED_WALLS, Config.DOOR_THICKNESS]
+        let settings = [Config.LINE_THICKNESS, Config.TEXTURE_WALL, Config.TEXTURE_DOOR, Config.TEXTURE_TERRAIN_WALL, Config.TEXTURE_ETHERAL_WALL, Config.TEXTURE_INVISIBLE_WALL, Config.SHOW_ANGLED_WALLS, Config.DOOR_THICKNESS]
         for (let settingsKey in settings) {
             if (settings.hasOwnProperty(settingsKey)) {
                 let settingName = settings[settingsKey]
@@ -67,7 +68,7 @@ export class Config {
                 scope: "world",
                 config: true,
                 type: String,
-                filePicker: true,
+                filePicker: 'image',
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
                 onChange: async () => {
                     await this._handleUpdatedConfig()
@@ -79,7 +80,7 @@ export class Config {
                 scope: "world",
                 config: true,
                 type: String,
-                filePicker: true,
+                filePicker: 'image',
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
                 onChange: async () => {
                     await this._handleUpdatedConfig()
@@ -91,8 +92,20 @@ export class Config {
                 scope: "world",
                 config: true,
                 type: String,
-                filePicker: true,
+                filePicker: 'image',
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/wall.png`,
+                onChange: async () => {
+                    await this._handleUpdatedConfig()
+                }
+            })
+            game.settings.register(WallDisplayApplication.MODULE_ID, Config.TEXTURE_INVISIBLE_WALL, {
+                name: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_INVISIBLE_WALL}.name`),
+                hint: game.i18n.localize(`${WallDisplayApplication.MODULE_ID}.settings.${Config.TEXTURE_INVISIBLE_WALL}.hint`),
+                scope: "world",
+                config: true,
+                type: String,
+                filePicker: 'image',
+                default: '',
                 onChange: async () => {
                     await this._handleUpdatedConfig()
                 }
@@ -103,7 +116,7 @@ export class Config {
                 scope: "world",
                 config: true,
                 type: String,
-                filePicker: true,
+                filePicker: 'image',
                 default: `modules/${WallDisplayApplication.MODULE_ID}/images/door.png`,
                 onChange: async () => {
                     await this._handleUpdatedConfig()

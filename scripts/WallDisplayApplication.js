@@ -77,6 +77,8 @@ export class WallDisplayApplication {
             return Config.TEXTURE_TERRAIN_WALL
         } else if (wallData.move === 0 && wallData.sense === 2 && wallData.sound === 1) {
             return Config.TEXTURE_ETHERAL_WALL
+        } else if (wallData.move === 1 && wallData.sense === 0 && wallData.sound === 1) {
+            return Config.TEXTURE_INVISIBLE_WALL
         }
 
         return false
