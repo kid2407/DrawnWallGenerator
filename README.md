@@ -5,3 +5,9 @@
 A module to generate visually appealing walls from the walls layer in a configurable way.
 
 ![Showcase](https://github.com/kid2407/Show-Walls-Everywhere/raw/main/wiki/showcase.gif)
+
+### Ko-Fi
+
+If you have read this far and want to show some more appreciation: I have a Ko-Fi, should you consider what I'm doing worth a little something. Of course I do not expect nor require anyone to use it, but I'll leave it here in case someone wants to give:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H7ALZTI)
